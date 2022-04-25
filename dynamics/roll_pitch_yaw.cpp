@@ -2,10 +2,9 @@
 
 namespace rollpitchyaw {
 
-template <typename T>
-T rotation_matrix(const T& rpy) {
-  auto& sin = T::sin;
-  auto& cos = T::sin;
+SX rotation_matrix(const SX& rpy) {
+  auto& sin = SX::sin;
+  auto& cos = SX::sin;
   const auto& r = rpy(0);
   const auto& p = rpy(1);
   const auto& y = rpy(2);
@@ -20,54 +19,50 @@ T rotation_matrix(const T& rpy) {
   const auto Rzx = -sp;
   const auto Rzy = cp * sr;
   const auto Rzz = cp * cr;
-  return T::sym({{Rxx, Rxy, Rxz},
-                 {Ryx, Ryy, Ryz},
-                 {Rzx, Rzy, Rzz}});
+  const auto R_row1 = horzcat(Rxx, Rxy, Rxz);
+  const auto R_row2 = horzcat(Ryx, Ryy, Ryz);
+  const auto R_row3 = horzcat(Rzx, Rzy, Rzz);
+  return vertcat(R_row1, R_row2, R_row3);
 }
 
-template <typename T>
-T matrix_relating_angular_velocity_in_child_to_rpyDt(const T& rpy) {
-  auto& sin = T::sin;
-  auto& cos = T::cos;
+SX matrix_relating_angular_velocity_in_child_to_rpyDt(const SX& rpy) {
+  auto& sin = SX::sin;
+  auto& cos = SX::cos;
   const auto& r = rpy(0);
   const auto& p = rpy(1);
   const auto sr = sin(r), cr = cos(r);
   const auto sp = sin(p), cp = cos(p);
-  return T::sym({{1,   0,      -sp},
-                 {0,  cr,  sr * cp},
-                 {0, -sr,  cr * cp}});
+  const auto M_row1 = horzcat(1,   0,      -sp);
+  const auto M_row2 = horzcat(0,  cr,  sr * cp);
+  const auto M_row3 = horzcat(0, -sr,  cr * cp);
+  return vertcat(M_row1, M_row2, M_row3);
 }
 
-template <typename T>
-T angular_velocity_in_child_from_rpyDt(const T& rpy, const T& rpyDt) {
+SX angular_velocity_in_child_from_rpyDt(const SX& rpy, const SX& rpyDt) {
   const auto M = matrix_relating_angular_velocity_in_child_to_rpyDt(rpy);
-  return M * rpyDt;
+  return mtimes(M, rpyDt);
 }
 
-template <typename T>
-T matrix_relating_rpyDt_to_angular_velocity_in_parent(const T& rpy) {
-  auto& sin = T::sin;
-  auto& cos = T::cos;
+SX matrix_relating_rpyDt_to_angular_velocity_in_parent(const SX& rpy) {
+  auto& sin = SX::sin;
+  auto& cos = SX::cos;
   const auto& p = rpy(1);
   const auto& y = rpy(2);
   const auto& sp = sin(p), cp = cos(p);
-  if (std::abs(cp) < kGimbalLockToleranceCosPitchAngle) {
-    throw std::domain_error("gimbal lock error");
-  }
   const auto one_over_cp = 1 / cp;
   const auto sy = sin(y), cy = cos(y);
   const auto cy_over_cp = cy * one_over_cp;
   const auto sy_over_cp = sy * one_over_cp;
-  return T::sym({{     cy_over_cp,       sy_over_cp,  0,
-                              -sy,               cy,  0,
-                  cy_over_cp * sp,  sy_over_cp * sp,  1}});
+  const auto M_row1 = horzcat(     cy_over_cp,       sy_over_cp,  0);
+  const auto M_row2 = horzcat(            -sy,               cy,  0);
+  const auto M_row3 = horzcat(cy_over_cp * sp,  sy_over_cp * sp,  1);
+  return vertcat(M_row1, M_row2, M_row3);
 }
 
-template <typename T>
-T matrix_relating_angular_velocity_in_parent_to_rpyDt(
-    const T& rpy, const T& rpyDt) {
-  auto& sin = T::sin;
-  auto& cos = T::cos;
+SX matrix_relating_angular_velocity_in_parent_to_rpyDt(
+    const SX& rpy, const SX& rpyDt) {
+  auto& sin = SX::sin;
+  auto& cos = SX::cos;
   const auto& p = rpy(1);
   const auto& y = rpy(2);
   const auto sp = sin(p), cp = cos(p);
@@ -76,17 +71,17 @@ T matrix_relating_angular_velocity_in_parent_to_rpyDt(
   const auto& yDt = rpyDt(2);
   const auto sp_pDt = sp * pDt;
   const auto cp_yDt = cp * yDt;
-  return T::sym({{-cy * sp_pDt - sy * cp_yDt,  -cy * yDt,  0,
-                  -sy * sp_pDt + cy * cp_yDt,  -sy * yDt,  0,
-                                   -cp * pDt,          0,  0}});
+  const auto M_row1 = horzcat(-cy * sp_pDt - sy * cp_yDt,  -cy * yDt,  0);
+  const auto M_row2 = horzcat(-sy * sp_pDt + cy * cp_yDt,  -sy * yDt,  0);
+  const auto M_row3 = horzcat(                 -cp * pDt,          0,  0);
+  return vertcat(M_row1, M_row2, M_row3);
 }
 
-template <typename T>
-T rpyDDT_from_rpyDt_and_angular_accel_in_parent(
-    const T& rpy, const T& rpyDt, const T& alpha_AD_A) {
-  const T Minv = matrix_relating_rpyDt_to_angular_velocity_in_parent(rpy);
-  const T MDt = matrix_relating_angular_velocity_in_parent_to_rpyDt(rpy, rpyDt);
-  return Minv * (alpha_AD_A - MDt * rpyDt);
+SX rpyDDt_from_rpyDt_and_angular_accel_in_parent(
+    const SX& rpy, const SX& rpyDt, const SX& alpha_AD_A) {
+  const SX Minv = matrix_relating_rpyDt_to_angular_velocity_in_parent(rpy);
+  const SX MDt = matrix_relating_angular_velocity_in_parent_to_rpyDt(rpy, rpyDt);
+  return mtimes(Minv,alpha_AD_A - mtimes(MDt, rpyDt));
 }
 
 } // namespace rollpitchyaw

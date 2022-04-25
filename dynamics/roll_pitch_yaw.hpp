@@ -2,29 +2,26 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <casadi/casadi.hpp>
 
 namespace rollpitchyaw {
 
+using casadi::SX;
+
 inline constexpr double kGimbalLockToleranceCosPitchAngle = 0.008;
 
-template <typename T>
-T rotation_matrix(const T& rpy);
+SX rotation_matrix(const SX& rpy);
 
-template <typename T>
-T matrix_relating_angular_velocity_in_child_to_rpyDt(const T& rpy);
+SX matrix_relating_angular_velocity_in_child_to_rpyDt(const SX& rpy);
 
-template <typename T>
-T angular_velocity_in_child_from_rpyDt(const T& rpy, const T& rpyDt);
+SX angular_velocity_in_child_from_rpyDt(const SX& rpy, const SX& rpyDt);
 
-template <typename T>
-T matrix_relating_rpyDt_to_angular_velocity_in_parent(const T& rpy);
+SX matrix_relating_rpyDt_to_angular_velocity_in_parent(const SX& rpy);
 
-template <typename T>
-T matrix_relating_angular_velocity_in_parent_to_rpyDt(
-    const T& rpy, const T& rpyDt);
+SX matrix_relating_angular_velocity_in_parent_to_rpyDt(
+    const SX& rpy, const SX& rpyDt);
 
-template <typename T>
-T rpyDDT_from_rpyDt_and_angular_accel_in_parent(
-    const T& rpy, const T& rpyDt, const T& alpha_AD_A);
+SX rpyDDt_from_rpyDt_and_angular_accel_in_parent(
+    const SX& rpy, const SX& rpyDt, const SX& alpha_AD_A);
 
 } // namespace rollpitchyaw

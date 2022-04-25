@@ -15,7 +15,7 @@ find_package(casadi REQUIRED)
 add_subdirectory("${PROJECT_SOURCE_DIR}/dynamics")
 list(APPEND EXTRA_LIBS dynamics)
 
-add_executable(quadrotor_control "${PROJECT_SOURCE_DIR}/experiments/quadrotor_control.cpp")
+add_executable(quadrotor_control "${PROJECT_SOURCE_DIR}/control/quadrotor_control.cpp")
 
-target_link_libraries(quadrotor_control PUBLIC casadi ${EXTRA_LIBS})
+target_link_libraries(quadrotor_control PRIVATE casadi ${EXTRA_LIBS})
 

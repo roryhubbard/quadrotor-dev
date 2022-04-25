@@ -8,8 +8,10 @@ project(quadrotor-control
 
 add_library(dynamics
             quadrotor_plant.cpp 
-            quadrotor_plant.hpp)
+            roll_pitch_yaw.cpp 
+            quadrotor_plant.hpp
+            roll_pitch_yaw.hpp)
 
-add_executable(quadrotor_control quadrotor_control.cpp)
+target_link_libraries(dynamics PUBLIC casadi)
+target_include_directories(dynamics INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(quadrotor_control PUBLIC casadi dynamics)

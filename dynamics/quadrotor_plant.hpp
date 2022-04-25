@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <casadi/casadi.hpp>
-//#include "roll_pitch_yaw.hpp"
+#include "roll_pitch_yaw.hpp"
 
 namespace quadrotor {
 
