@@ -5,7 +5,7 @@ rm -rf build
 mkdir build
 pushd build
 cmake ..
-cmake --build .
+make -j8
 popd
 build/casadi_eigen_comparison
 
