@@ -55,13 +55,5 @@ int main () {
   cout << x_casadi << endl;
   cout << x_eigen << endl;
 
-//  cout << A << endl;
-//  cout << D << endl;
-//  cout << LT << endl;
-//  cout << r << endl;
-//  cout << r(0) << endl;
-//  cout << r(1) << endl;
-//  cout << r(2) << endl;
-
   return 0;
 }
