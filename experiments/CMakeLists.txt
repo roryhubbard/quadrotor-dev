@@ -17,6 +17,8 @@ find_package(Eigen3 REQUIRED)
 include_directories("${EIGEN3_INCLUDE_DIR}")
 
 add_executable(casadi_eigen_comparison casadi_eigen_comparison.cpp)
+add_executable(quick_casadi quick_casadi.cpp)
 
 target_link_libraries(casadi_eigen_comparison casadi "${EIGEN_LIBRARIES}")
+target_link_libraries(quick_casadi casadi)
 

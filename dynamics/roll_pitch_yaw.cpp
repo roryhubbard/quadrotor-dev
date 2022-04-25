@@ -1,6 +1,6 @@
-#include "dynamics.hpp"
+#include "roll_pitch_yaw.hpp"
 
-namespace dynamics {
+namespace rollpitchyaw {
 
 template <typename T>
 T rotation_matrix(const T& rpy) {
@@ -89,4 +89,4 @@ T rpyDDT_from_rpyDt_and_angular_accel_in_parent(
   return Minv * (alpha_AD_A - MDt * rpyDt);
 }
 
-} // namespace dynamics
+} // namespace rollpitchyaw

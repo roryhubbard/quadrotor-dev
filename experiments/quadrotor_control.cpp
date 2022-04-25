@@ -3,14 +3,7 @@
 #include <casadi/casadi.hpp>
 #include "quadrotor_plant.hpp"
 
-using casadi::SX;
-using casadi::SXDict;
-using casadi::MX;
-using casadi::MXDict;
-using casadi::DM;
-using casadi::Dict;
-using casadi::inf;
-using casadi::Function;
+namespace ca = casadi;
 using quadrotor::QuadRotor;
 using std::vector;
 using std::cout;
@@ -22,7 +15,12 @@ void append_vector(vector<T>& a, const vector<T>& b) {
 }
 
 int main() {
-  auto cf = QuadRotor<SX>();
+  ca::SX I;
+  ca::Slice all;
+  I(0, all) = {0.0015, 0,      0};
+  I(1, all) = {0, 0.0025,      0};
+  I(2, all) = {0,      0, 0.0035};
+  auto cf = QuadRotor(0.1, 0.1, I, 1.0, 0.1);
 
   // objective
 //  SX L = SX::sumsqr(X);

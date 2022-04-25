@@ -3,7 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace dynamics {
+namespace rollpitchyaw {
 
 inline constexpr double kGimbalLockToleranceCosPitchAngle = 0.008;
 
@@ -27,4 +27,4 @@ template <typename T>
 T rpyDDT_from_rpyDt_and_angular_accel_in_parent(
     const T& rpy, const T& rpyDt, const T& alpha_AD_A);
 
-} // namespace dynamics
+} // namespace rollpitchyaw

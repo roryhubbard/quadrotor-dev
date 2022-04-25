@@ -4,7 +4,7 @@ rm -rf build
 mkdir build
 pushd build
 cmake ..
-make
+cmake --build .
 popd
 build/quadrotor_control
 
