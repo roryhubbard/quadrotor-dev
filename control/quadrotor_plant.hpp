@@ -1,10 +1,10 @@
 #pragma once
 
+#include <vector>
 #include <casadi/casadi.hpp>
+#include "dynamics.hpp"
 
 namespace quadrotor {
-
-inline constexpr double kGimbalLockToleranceCosPitchAngle = 0.008;
 
 template <typename T>
 struct ThreeDOF {

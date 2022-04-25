@@ -7,6 +7,5 @@ pushd build
 cmake ..
 make
 popd
-build/quadrotor
-
+build/casadi_eigen_comparison
 
