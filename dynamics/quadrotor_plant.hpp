@@ -51,9 +51,11 @@ class QuadRotor {
   public:
     QuadRotor();
     QuadRotor(double m, double L, SX I, double kF, double kM);
-    [[nodiscard]] SixDOF<SX> X() const { return X_; } 
+    [[nodiscard]] SX X() const { return X_.full_state(); }
     [[nodiscard]] SX U() const { return U_; }
     [[nodiscard]] SX ode() const { return ode_; }
+    [[nodiscard]] int nx() const { return X_.full_state().numel(); }
+    [[nodiscard]] int nu() const { return U_.numel(); }
 
   private:
     const double g_;  // gravitational acceleration (m/s^2)
