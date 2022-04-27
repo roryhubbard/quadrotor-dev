@@ -46,11 +46,12 @@ struct SixDOF {
   ThreeDOF<T> rpy;
 };
 
-class QuadRotor {
+class Quadrotor {
 
   public:
-    QuadRotor();
-    QuadRotor(double m, double L, SX I, double kF, double kM);
+    Quadrotor();
+    Quadrotor(double m, double L, SX I, double kF, double kM);
+
     [[nodiscard]] SX X() const { return X_.full_state(); }
     [[nodiscard]] SX U() const { return U_; }
     [[nodiscard]] SX ode() const { return ode_; }
@@ -72,19 +73,25 @@ class QuadRotor {
     SX calculate_ode();
 };
 
-class PlanarQuadrotor: public QuadRotor {
+class PlanarQuadrotor: public Quadrotor {
 
   public:
     PlanarQuadrotor();
     PlanarQuadrotor(double m_arg, double l_arg);
 };
 
-class CrazyFlie : QuadRotor {
+class Crazyflie : Quadrotor {
   // crazyflie 2.1 specs
+  public:
+    Crazyflie();
+    Crazyflie(double m_arg, double l_arg);
 };
 
-class PlanarCrazyFlie final : CrazyFlie {
+class PlanarCrazyflie final : Crazyflie {
   // crazyflie 2.1 specs
+  public:
+    PlanarCrazyflie();
+    PlanarCrazyflie(double m_arg, double l_arg);
 };
 
 } // namespace quadrotor

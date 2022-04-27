@@ -15,16 +15,15 @@ SX default_moment_of_inertia() {
   return I;
 }
 
-QuadRotor::QuadRotor()
-    : QuadRotor(
-        0.1, // m (kg)
-        0.1, // L (m)
-        default_moment_of_inertia(),
-        1.0, // kF
-        0.1  // kM
-        ) {}
+Quadrotor::Quadrotor()
+    : Quadrotor(0.775,  // m (kg)
+                0.15,  // L (m)
+                default_moment_of_inertia(),
+                1.0,    // kF
+                0.0245  // kM
+                ) {}
 
-QuadRotor::QuadRotor(double m, double L, SX I, double kF, double kM)
+Quadrotor::Quadrotor(double m, double L, SX I, double kF, double kM)
     : g_(9.81),
       m_(m),
       L_(L),
@@ -34,7 +33,7 @@ QuadRotor::QuadRotor(double m, double L, SX I, double kF, double kM)
       U_(SX::sym("U",4)),
       ode_(calculate_ode()) {}
 
-SX QuadRotor::calculate_ode() {
+SX Quadrotor::calculate_ode() {
   // https://andrew.gibiansky.com/downloads/pdf/Quadcopter%20Dynamics,%20Simulation,%20and%20Control.pdf
   // https://github.com/RobotLocomotion/drake/blob/master/examples/quadrotor/quadrotor_plant.cc#L62
 
