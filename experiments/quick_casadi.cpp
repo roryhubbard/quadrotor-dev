@@ -30,8 +30,40 @@ SX rotation_matrix(const SX& rpy) {
   return vertcat(R_row1, R_row2, R_row3);
 }
 
+template<typename T>
+T default_moment_of_inertia() {
+  Slice all;
+  T I = T::sym("I", 3, 3);
+  I(0, all) = {0.0015, 0,      0};
+  I(1, all) = {0, 0.0025,      0};
+  I(2, all) = {0,      0, 0.0035};
+  return I;
+}
+
+template<>
+MX default_moment_of_inertia<MX>() {
+  Slice all;
+  MX I = MX::sym("I", 3, 3);
+  I(0, 0) = 0.0015;
+  I(0, 1) = 0;
+  I(0, 2) = 0;
+  I(1, 0) = 0;
+  I(1, 1) = 0.0025;
+  I(1, 2) = 0;
+  I(2, 0) = 0;
+  I(2, 1) = 0;
+  I(2, 2) = 0.0035;
+  return I;
+}
+
 int main () {
   SX x = SX::sym("", 3);
+  auto a = SX::sym("", 12);
+  cout << a << endl;
+  cout << a(Slice(2, std::numeric_limits<casadi_int>::max())) << endl;
+  cout << a(Slice(2, 12)) << endl;
+  cout << a(Slice(2, 12)) << endl;
+  return 0;
   x(0) = 1;
   x(1) = 2;
   x(2) = 3;

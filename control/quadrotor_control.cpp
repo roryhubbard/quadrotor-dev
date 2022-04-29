@@ -62,6 +62,7 @@ int main() {
   const auto dXdt = cf.ode();
   const auto nx = cf.nx();
   const auto nu = cf.nu();
+  return 0;
 
   // objective
   ca::SX L = sumsqr(X);

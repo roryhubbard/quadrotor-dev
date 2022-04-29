@@ -3,10 +3,10 @@
 namespace quadrotor {
 
 using casadi::SX;
+using casadi::Slice;
 namespace RPY = rollpitchyaw;
 
 SX default_moment_of_inertia() {
-  using casadi::Slice;
   Slice all;
   SX I = SX::sym("I", 3, 3);
   I(0, all) = {0.0015, 0,      0};
@@ -15,31 +15,43 @@ SX default_moment_of_inertia() {
   return I;
 }
 
+//DynamicSystem::DynamicSystem()
+//    : X_(SX::sym("X")),
+//      U_(SX::sym("U")),
+//      ode_(SX::sym("ode"))
+//  {}
+
 Quadrotor::Quadrotor()
     : Quadrotor(0.775,  // m (kg)
-                0.15,  // L (m)
-                default_moment_of_inertia(),
+                0.15,   // L (m)
                 1.0,    // kF
-                0.0245  // kM
-                ) {}
+                0.0245, // kM
+                default_moment_of_inertia()
+                )
+  {}
 
-Quadrotor::Quadrotor(double m, double L, SX I, double kF, double kM)
+Quadrotor::Quadrotor(double m, double L, double kF, double kM, SX I)
     : g_(9.81),
       m_(m),
       L_(L),
-      I_(I),
       kF_(kF),
       kM_(kM),
-      U_(SX::sym("U",4)),
-      ode_(calculate_ode()) {}
+      I_(I)
+  {
+    this->X() = SX::sym("X", 12);
+    this->U() = SX::sym("U", 4);
+    set_ode();
+  }
 
-SX Quadrotor::calculate_ode() {
+void Quadrotor::set_ode() {
   // https://andrew.gibiansky.com/downloads/pdf/Quadcopter%20Dynamics,%20Simulation,%20and%20Control.pdf
   // https://github.com/RobotLocomotion/drake/blob/master/examples/quadrotor/quadrotor_plant.cc#L62
 
+  const auto U = this->U();
+  const auto X = this->X();
   // For each rotor, calculate the Bz measure of its aerodynamic force on B.
   // Note: B is the quadrotor body and Bz is parallel to each rotor's spin axis.
-  const auto uF_Bz = kF_ * U_;
+  const auto uF_Bz = kF_ * U;
   const auto thrust = sum1(uF_Bz);
 
   // Compute the net aerodynamic force on B (from the 4 rotors), expressed in B.
@@ -58,7 +70,7 @@ SX Quadrotor::calculate_ode() {
   // For rotors 1 and 3, get the -Bz measure of its aerodynamic torque on B.
   // Sum the net Bz measure of the aerodynamic torque on B.
   // Note: Rotors 0 and 2 rotate one way and rotors 1 and 3 rotate the other.
-  const auto uM_Bz = kM_ * U_;
+  const auto uM_Bz = kM_ * U;
   const auto Mz = uM_Bz(0) - uM_Bz(1) + uM_Bz(2) - uM_Bz(3);
 
   // For rotors 0 and 2, get the Bz measure of its aerodynamic torque on B.
@@ -74,8 +86,8 @@ SX Quadrotor::calculate_ode() {
   Fgravity_N(2) = -m_ * g_;
 
   // Extract roll-pitch-yaw angles (rpy) and their time-derivatives (rpyDt).
-  const auto rpy = X_.rpy.positions();
-  const auto rpyDt = X_.rpy.velocities();
+  const auto rpy = X(Slice(3, 6));
+  const auto rpyDt = X(Slice(6, 9));
 
   // Convert roll-pitch-yaw (rpy) orientation to the R_NB rotation matrix.
   const auto R_NB = RPY::rotation_matrix(rpy);
@@ -107,15 +119,15 @@ SX Quadrotor::calculate_ode() {
   const auto rpyDDt = RPY::rpyDDt_from_rpyDt_and_angular_accel_in_parent(
       rpy, rpyDt, alpha_NB_N);
 
-  return vertcat(X_.velocities(), xyzDDt, rpyDDt);
+  this->ode() = vertcat(X(Slice(6, 12)), xyzDDt, rpyDDt);
 }
 
-PlanarQuadrotor::PlanarQuadrotor()
-    : PlanarQuadrotor(0.1, 0.1)
-      {}
-
-PlanarQuadrotor::PlanarQuadrotor(double m, double l_arg)
-    {}
+//PlanarQuadrotor::PlanarQuadrotor()
+//    : PlanarQuadrotor(0.1, 0.1)
+//      {}
+//
+//PlanarQuadrotor::PlanarQuadrotor(double m, double l_arg)
+//    {}
 
 } // namespace quadrotor
 
