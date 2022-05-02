@@ -9,8 +9,8 @@ using casadi::SX;
 class System {
 
   public:
-    System();
-    virtual ~System();
+//    System();
+//    virtual ~System();
 
     SX&                     X()       { return X_; }
     [[nodiscard]] const SX& X() const { return X_; }

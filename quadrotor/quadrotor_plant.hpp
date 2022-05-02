@@ -14,7 +14,7 @@ class Quadrotor : public systems::System {
   public:
     Quadrotor();
     Quadrotor(double m, double L, double kF, double kM, SX I_);
-    ~Quadrotor() override;
+//~Quadrotor() override;
 
     double&                     g()       { return g_; }
     [[nodiscard]] const double& g() const { return g_; }

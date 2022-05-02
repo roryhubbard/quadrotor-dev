@@ -7,13 +7,13 @@ namespace systems {
 
 using casadi::SX;
 
-System::System()
-    : X_(SX::sym("X")),
-      U_(SX::sym("U")),
-      ode_(SX::sym("ode"))
-  {}
-
-System::~System() = default;
+//System::System()
+//    : X_(SX::sym("X")),
+//      U_(SX::sym("U")),
+//      ode_(SX::sym("ode"))
+//  {}
+//
+//System::~System() = default;
 
 } // namespace systems
 
