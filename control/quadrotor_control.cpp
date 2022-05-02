@@ -55,21 +55,17 @@ std::vector<std::vector<T>> straight_line_trajectory_guess(
   return merged_traj;
 }
 
-int main() {
-  auto cf = Quadrotor();
-  const auto X = cf.X();
-  const auto U = cf.U();
-  const auto dXdt = cf.ode();
-  const auto nx = cf.nx();
-  const auto nu = cf.nu();
-  return 0;
+ca::DMDict multiple_shooting(const Quadrotor& quadrotor,
+                             const double& T, const int& N) {
+  const auto X = quadrotor.X();
+  const auto U = quadrotor.U();
+  const auto dXdt = quadrotor.ode();
+  const auto nx = quadrotor.nx();
+  const auto nu = quadrotor.nu();
 
   // objective
   ca::SX L = sumsqr(X);
   ca::SXDict dae = {{"x", X}, {"p", U}, {"ode", dXdt}, {"quad", L}};
-
-  const double T = 1; // time horizon
-  const int N = 10; // # shooting nodes == # control ticks
 
   const bool use_cvodes = true;
   ca::Function F; // integrator
@@ -190,7 +186,18 @@ int main() {
   arg["x0"] = w0;
 
   // Solve the problem
-  res = solver(arg);
+  return solver(arg);
+}
+
+int main() {
+  auto quadrotor = Quadrotor();
+  const auto nx = quadrotor.nx();
+  const auto nu = quadrotor.nu();
+
+  const double T = 1; // time horizon
+  const int N = 10; // # shooting nodes == # control ticks
+
+  const auto res = multiple_shooting(quadrotor, T, N);
 
   // Optimal solution of the NLP
   std::vector<double> w_opt(res.at("x"));

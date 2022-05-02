@@ -65,7 +65,7 @@ class Quadrotor : public DynamicSystem {
     double L_;  // length of arms (m)
     double kF_; // force input constant
     double kM_; // moment input constant
-    SX I_;       // moment of intertia about center of mass
+    SX I_;      // moment of intertia about center of mass
 };
 
 //class PlanarQuadrotor : public Quadrotor {
