@@ -2,41 +2,19 @@
 
 #include <vector>
 #include <casadi/casadi.hpp>
+#include "system.hpp"
 #include "roll_pitch_yaw.hpp"
 
 namespace quadrotor {
 
 using casadi::SX;
 
-class DynamicSystem {
-
-  public:
-    SX&                     X()       { return X_; }
-    [[nodiscard]] const SX& X() const { return X_; }
-
-    SX&                     U()       { return U_; }
-    [[nodiscard]] const SX& U() const { return U_; }
-
-    SX&                     ode()       { return ode_; }
-    [[nodiscard]] const SX& ode() const { return ode_; }
-
-    [[nodiscard]] int nx() const { return static_cast<int>(X_.numel()); }
-    [[nodiscard]] int nu() const { return static_cast<int>(U_.numel()); }
-
-  protected:
-    virtual void set_ode() {};
-
-  private:
-    SX X_;   // state vector
-    SX U_;   // control vector
-    SX ode_; // dX/dt = f(x, u)
-};
-
-class Quadrotor : public DynamicSystem {
+class Quadrotor : public systems::System {
 
   public:
     Quadrotor();
     Quadrotor(double m, double L, double kF, double kM, SX I_);
+    ~Quadrotor() override;
 
     double&                     g()       { return g_; }
     [[nodiscard]] const double& g() const { return g_; }

@@ -37,6 +37,8 @@ Quadrotor::Quadrotor(double m, double L, double kF, double kM, SX I)
     set_ode();
   }
 
+Quadrotor::~Quadrotor() = default;
+
 void Quadrotor::set_ode() {
   // https://andrew.gibiansky.com/downloads/pdf/Quadcopter%20Dynamics,%20Simulation,%20and%20Control.pdf
   // https://github.com/RobotLocomotion/drake/blob/master/examples/quadrotor/quadrotor_plant.cc#L62
