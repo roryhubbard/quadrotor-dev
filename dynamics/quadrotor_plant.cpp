@@ -15,12 +15,6 @@ SX default_moment_of_inertia() {
   return I;
 }
 
-//DynamicSystem::DynamicSystem()
-//    : X_(SX::sym("X")),
-//      U_(SX::sym("U")),
-//      ode_(SX::sym("ode"))
-//  {}
-
 Quadrotor::Quadrotor()
     : Quadrotor(0.775,  // m (kg)
                 0.15,   // L (m)
