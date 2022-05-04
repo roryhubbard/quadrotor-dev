@@ -28,7 +28,31 @@ std::vector<T> linspace(const T& a, const T& b, const std::size_t& N) {
 }
 
 template<typename T>
-std::vector<std::vector<T>> straight_line_trajectory_guess(
+std::vector<T> straight_line_trajectory_continuous(
+    const std::vector<T>& xi, const std::vector<T>& xf, const std::size_t& N) {
+
+  const auto nstates = xi.size();
+
+  std::vector<std::vector<T>> individual_traj;
+  for (std::size_t i = 0; i < nstates; ++i) {
+    const auto state_traj_i = linspace(xi[i], xf[i], N);
+    individual_traj.push_back(state_traj_i);
+  }
+
+  std::vector<std::vector<T>> merged_traj(N*nstates);
+  auto x = merged_traj.begin();
+  for (std::size_t i = 0; i < N; ++i) {
+    for (std::size_t j = 0; j < nstates; ++j) {
+      *x = std::move(individual_traj[j][i]);
+    }
+  }
+
+  assert(x==merged_traj.end());
+  return merged_traj;
+}
+
+template<typename T>
+std::vector<std::vector<T>> straight_line_trajectory_stacked(
     const std::vector<T>& xi, const std::vector<T>& xf, const std::size_t& N) {
 
   const auto nstates = xi.size();
@@ -53,15 +77,13 @@ std::vector<std::vector<T>> straight_line_trajectory_guess(
     ++i;
   }
 
-  assert(x==merged_traj.end());
   return merged_traj;
 }
 
 ca::Function RK4_integrator(
-    const double T, const int N, const ca::SX& x,
+    const double dt, const int N, const ca::SX& x,
     const ca::SX& u, const ca::SX& xdot, const ca::SX& L) {
-  const int M = 4; // RK4 steps per interval
-  const double DT = T / N / M;
+  const int M = 1; // RK4 steps per interval
   const auto f = ca::Function("integrator", {x, u}, {xdot, L},
                                             {"x", "u"}, {"dx", "l"});
 
@@ -72,11 +94,11 @@ ca::Function RK4_integrator(
 
   for (int j=0; j < M; ++j) {
     auto k1 = f(ca::SXDict{{"x", X}, {"u", U}});
-    auto k2 = f(ca::SXDict{{"x", X + DT/2 * k1["dx"]}, {"u", U}});
-    auto k3 = f(ca::SXDict{{"x", X + DT/2 * k2["dx"]}, {"u", U}});
-    auto k4 = f(ca::SXDict{{"x", X + DT   * k3["dx"]}, {"u", U}});
-    X += DT/6 * (k1["dx"] + 2*k2["dx"] + 2*k3["dx"] + k4["dx"]);
-    Q += DT/6 * (k1["l"]  + 2*k2["l"]  + 2*k3["l"]  + k4["l"]);
+    auto k2 = f(ca::SXDict{{"x", X + dt/2 * k1["dx"]}, {"u", U}});
+    auto k3 = f(ca::SXDict{{"x", X + dt/2 * k2["dx"]}, {"u", U}});
+    auto k4 = f(ca::SXDict{{"x", X + dt   * k3["dx"]}, {"u", U}});
+    X += dt/6 * (k1["dx"] + 2*k2["dx"] + 2*k3["dx"] + k4["dx"]);
+    Q += dt/6 * (k1["l"]  + 2*k2["l"]  + 2*k3["l"]  + k4["l"]);
   }
 
   return ca::Function("F", {X0, U}, {X, Q},
@@ -84,7 +106,7 @@ ca::Function RK4_integrator(
 }
 
 ca::DMDict multiple_shooting(const Acrobot& acrobot,
-                             const double& T, const int& N) {
+                             const double& dt, const int& N) {
   const auto& X = acrobot.X();
   const auto& U = acrobot.U();
   const auto& ode = acrobot.ode();
@@ -92,24 +114,27 @@ ca::DMDict multiple_shooting(const Acrobot& acrobot,
   const auto nu = acrobot.nu();
 
   // Bounds and initial guess for the control
-  std::vector<double> u_min = {-20};
-  std::vector<double> u_max = {20};
-  std::vector<double> u_init = {0.0};
+  const std::vector<double> u_min = {-10};
+  const std::vector<double> u_max = {10};
+  const std::vector<double> u_init = {0.0};
 
   // Bounds and initial guess for the state
-  std::vector<double> x0_min = {0, 0, 0, 0};
-  std::vector<double> x0_max = {0, 0, 0, 0};
-  std::vector<double> x_min  = {-2*M_PI, -2*M_PI, -2*M_PI, -2*M_PI};
-  std::vector<double> x_max  = {2*M_PI, 2*M_PI, 2*M_PI, 2*M_PI};
-  std::vector<double> xf_min = {M_PI, 0, 0, 0};
-  std::vector<double> xf_max = {M_PI, 0, 0, 0};
-  std::vector<double> x_init = {0, 0, 0, 0};
+  const std::vector<double> x0 = {   0, 0, 0, 0};
+  const std::vector<double> xf = {M_PI, 0, 0, 0};
+  const auto& x0_min = x0;
+  const auto& x0_max = x0;
+  const std::vector<double> x_min  = {-2*M_PI, -3*M_PI_4, -2*M_PI, -2*M_PI};
+  const std::vector<double> x_max  = {2*M_PI,   3*M_PI_4,  2*M_PI,  2*M_PI};
+  const auto& xf_min = xf;
+  const auto& xf_max = xf;
+  //const std::vector<std::vector<double>> x_init(N+1, {0, 0, 0, 0});
+  const auto x_init = straight_line_trajectory_stacked(x0, xf, N+1);
 
   // objective
   ca::SX L = U*U;
   ca::SXDict dae = {{"x", X}, {"p", U}, {"ode", ode}, {"quad", L}};
 
-  const auto F = RK4_integrator(T, N, X, U, ode, L);
+  const auto F = RK4_integrator(dt, N, X, U, ode, L);
 
   // Total number of NLP variables
   const int NV = nx*(N+1) + nu*N;
@@ -135,7 +160,7 @@ ca::DMDict multiple_shooting(const Acrobot& acrobot,
       v_min.insert(v_min.end(), x_min.begin(), x_min.end());
       v_max.insert(v_max.end(), x_max.begin(), x_max.end());
     }
-    v_init.insert(v_init.end(), x_init.begin(), x_init.end());
+    v_init.insert(v_init.end(), x_init[k].begin(), x_init[k].end());
     offset += nx;
 
     // Local control
@@ -150,7 +175,7 @@ ca::DMDict multiple_shooting(const Acrobot& acrobot,
   x.push_back(V.nz(ca::Slice(offset, offset+nx)));
   v_min.insert(v_min.end(), xf_min.begin(), xf_min.end());
   v_max.insert(v_max.end(), xf_max.begin(), xf_max.end());
-  v_init.insert(v_init.end(), x_init.begin(), x_init.end());
+  v_init.insert(v_init.end(), x_init.back().begin(), x_init.back().end());
   offset += nx;
 
   // Make sure that the size of the variable vector is consistent with the number of variables that we have referenced
@@ -179,7 +204,7 @@ ca::DMDict multiple_shooting(const Acrobot& acrobot,
 
   // Set options
   ca::Dict opts;
-  //opts["ipopt.tol"] = 1e-5;
+  opts["ipopt.tol"] = 1e-5;
   //opts["ipopt.max_iter"] = 100;
 
   // Create an NLP solver and buffers
@@ -202,10 +227,10 @@ int main() {
   const auto nx = acrobot.nx();
   const auto nu = acrobot.nu();
 
-  const double T = 5; // time horizon
-  const int N = 50; // # shooting nodes == # control ticks
+  const double dt = .05; // control rate (Hz)
+  const int N = 200; // # shooting nodes == # control ticks
 
-  const auto res = multiple_shooting(acrobot, T, N);
+  const auto res = multiple_shooting(acrobot, dt, N);
 
   // Optimal solution of the NLP
   std::vector<double> w_opt(res.at("x"));

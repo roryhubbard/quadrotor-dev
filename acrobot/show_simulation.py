@@ -5,7 +5,7 @@ from animation import AxData, Animator
 
 
 def main():
-  with open('build/swingup_trajectory.json') as f:
+  with open('swingup_trajectory.json') as f:
     data = json.load(f)
 
   theta1 = data['q1']
@@ -33,9 +33,9 @@ def main():
     AxData(pendulum_x, pendulum_y, 'position', plot_history=False),
   ]
 
-  dt = 0.1
+  dt = 0.05
   animator = Animator(1, ax_data, dt, fig, ax, show_legend=False)
-  #animator.set_save_path('/home/chub')
+  animator.set_save_path('/home/chub/swingup')
   animator.run()
 
 if __name__ == "__main__":

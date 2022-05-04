@@ -6,5 +6,5 @@ pushd build
 cmake ..
 make -j8
 popd
-build/acrobot_control
+build/acrobot_control2
 

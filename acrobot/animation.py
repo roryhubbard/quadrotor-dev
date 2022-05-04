@@ -99,8 +99,10 @@ class Animator:
                 init_func=self._init_animate, frames=num_frames,
                 interval=frame_interval, blit=True)
             if self.save_path is not None:
-                if '.mp4' not in self.save_path:
-                    self.save_path += '.mp4'
+                #if '.mp4' not in self.save_path:
+                #    self.save_path += '.mp4'
+                if '.gif' not in self.save_path:
+                    self.save_path += '.gif'
                 anim.save(self.save_path)
         plt.show()
         plt.close()
