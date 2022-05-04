@@ -57,22 +57,8 @@ MX default_moment_of_inertia<MX>() {
 }
 
 int main () {
-  SX x = SX::sym("", 3);
-  auto a = SX::sym("", 12);
-  cout << a << endl;
-  cout << a(Slice(2, std::numeric_limits<casadi_int>::max())) << endl;
-  cout << a(Slice(2, 12)) << endl;
-  cout << a(Slice(2, 12)) << endl;
-  return 0;
-  x(0) = 1;
-  x(1) = 2;
-  x(2) = 3;
-  SX R = SX::eye(3);
-  R(2,2) = 5;
-
-  auto z = mtimes(R, x);
-
-  cout << z.size() << endl;
+  MX V = MX::sym("V", 10);
+  cout << V.nz(Slice(0, 3)) << endl;
 
   return 0;
 }

@@ -1,3 +1,4 @@
+#include<cmath>
 #include "quadrotor_plant.hpp"
 
 namespace quadrotor {
@@ -8,7 +9,7 @@ namespace RPY = rollpitchyaw;
 
 SX default_moment_of_inertia() {
   Slice all;
-  SX I = SX::sym("I", 3, 3);
+  auto I = SX::sym("I", 3, 3);
   I(0, all) = {0.0015, 0,      0};
   I(1, all) = {0, 0.0025,      0};
   I(2, all) = {0,      0, 0.0035};
@@ -21,8 +22,7 @@ Quadrotor::Quadrotor()
                 1.0,    // kF
                 0.0245, // kM
                 default_moment_of_inertia()
-                )
-  {}
+                ) {}
 
 Quadrotor::Quadrotor(double m, double L, double kF, double kM, SX I)
     : g_(9.81),
@@ -30,8 +30,7 @@ Quadrotor::Quadrotor(double m, double L, double kF, double kM, SX I)
       L_(L),
       kF_(kF),
       kM_(kM),
-      I_(I)
-  {
+      I_(I) {
     this->X() = SX::sym("X", 12);
     this->U() = SX::sym("U", 4);
     set_ode();

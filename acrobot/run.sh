@@ -6,5 +6,5 @@ pushd build
 cmake ..
 make -j8
 popd
-build/quadrotor_control
+build/acrobot_control
 
